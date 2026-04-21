@@ -81,4 +81,4 @@ jobs:
       env:
         PRODUCT_SERVICE_URL: http://localhost:8081
         ORDERS_SERVICE_URL: http://localhost:8082
-      run: mvn -B test -pl producto-service,orden-service
+      run: mvn -B test -pl producto-service,orden-service -am
