@@ -1,0 +1,104 @@
+name: CI microservicios
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+permissions:
+  contents: read
+  security-events: write
+  id-token: write
+  packages: write
+jobs:
+  build-test-run:
+
+    runs-on: ubuntu-latest
+    services:
+      producto-db:
+        image: postgres:15
+        env:
+          POSTGRES_USER: ${{ secrets.DB_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          POSTGRES_DB: productodb
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd="pg_isready -U $$POSTGRES_USER"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+      orden-db:
+        image: postgres:15
+        env:
+          POSTGRES_USER: ${{ secrets.DB_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          POSTGRES_DB: ordendb
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd="pg_isready -U $$POSTGRES_USER"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+    - name: Checkout del código
+      uses: actions/checkout@v4
+    - name: Set up JDK 25
+      uses: actions/setup-java@v4
+      with:
+        java-version: '25'
+        distribution: 'temurin'
+        cache: maven
+    # ========================
+    # Seguridad sobre el código (SAST + Dependency)
+    # ========================
+    - name: Instalando Snyk CLI
+      run: npm install -g snyk
+    - name: Escaneo de dependencias Snyk
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: snyk test --all-projects --severity-threshold=medium
+    - name: Trivy Filesystem Scan (SAST + config)
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        ignore-unfixed: true
+        severity: 'HIGH,CRITICAL'
+    - name: Compilar modulos sin tests
+      run: mvn -B -pl producto-service,orden-service -am clean package -DskipTests
+    # __________________________
+    # Levantar producto-service
+    # __________________________
+    - name: Iniciar producto-service
+      env:
+        SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
+        SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      run: |
+        cd producto-service
+        nohup java -jar target/*.jar \
+          --server.port=8081 \
+          --spring.datasource.url=jdbc:postgresql://localhost:5433/productodb \
+          > ../logs_producto/producto-service.log 2>&1 &
+    # __________________________
+    # Levantar orden-service (dependiente)
+    # __________________________
+    - name: Iniciar orden-service
+      env:
+        SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
+        SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      run: |
+        cd orden-service
+        nohup java -jar target/*.jar \
+          --server.port=8082 \
+          --spring.datasource.url=jdbc:postgresql://localhost:5434/ordendb \
+          > ../logs_orden/orden-service.log 2>&1 &
+
+    - name: Esperar hasta que los servicios estén listos
+      run: sleep 25
+    - name: Ejecutando tests de integración (multi módulo)
+      env:
+        PRODUCT_SERVICE_URL: http://localhost:8081
+        ORDERS_SERVICE_URL: http://localhost:8082
+      run: mvn -B test -pl producto-service,orden-service -am
