@@ -50,6 +50,22 @@ jobs:
         java-version: '25'
         distribution: 'temurin'
         cache: maven
+    # ========================
+    # Seguridad sobre el código (SAST + Dependency)
+    # ========================
+    - name: Instalando Snyk CLI
+      run: npm install -g snyk
+    - name: Escaneo de dependencias Snyk
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: snyk test --all-projects --severity-threshold=medium
+    - name: Trivy Filesystem Scan (SAST + config)
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        ignore-unfixed: true
+        severity: 'HIGH,CRITICAL'
     - name: Compilar modulos sin tests
       run: mvn -B -pl producto-service,orden-service -am clean package -DskipTests
     # __________________________
