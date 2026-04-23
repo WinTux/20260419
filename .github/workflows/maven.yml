@@ -77,6 +77,19 @@ jobs:
         | tar zx
         sudo mv conftest /usr/local/bin/
         conftest --version
+    - name: Validando politicas
+      run: |
+        conftest verify --policy policy
+    - name: Debug Dockerfile parser output
+      run: |
+        echo "=== producto-service parsed ==="
+        conftest parse --parse dockerfile producto-service/Dockerfile
+        echo "=== orden-service parsed ==="
+        conftest parse --parse dockerfile orden-service/Dockerfile
+    - name: Verificación de políticas de seguridad (Dockerfile)
+      run: |
+        conftest test --parser dockerfile producto-service/Dockerfile --output json
+        conftest test --parser dockerfile orden-service/Dockerfile --output json
     # __________________________
     # Levantar producto-service
     # __________________________
