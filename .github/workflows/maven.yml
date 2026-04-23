@@ -83,9 +83,9 @@ jobs:
     - name: Debug Dockerfile parser output
       run: |
         echo "=== producto-service parsed ==="
-        conftest parse --parse dockerfile producto-service/Dockerfile
+        conftest parse --parser dockerfile producto-service/Dockerfile
         echo "=== orden-service parsed ==="
-        conftest parse --parse dockerfile orden-service/Dockerfile
+        conftest parse --parser dockerfile orden-service/Dockerfile
     - name: Verificación de políticas de seguridad (Dockerfile)
       run: |
         conftest test --parser dockerfile producto-service/Dockerfile --output json
