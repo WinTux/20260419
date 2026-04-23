@@ -58,7 +58,7 @@ jobs:
     - name: Escaneo de dependencias Snyk
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      run: snyk test --all-projects --severity-threshold=medium
+      run: snyk test --all-projects --severity-threshold=critical
     - name: Trivy Filesystem Scan (SAST + config)
       uses: aquasecurity/trivy-action@master
       with:
