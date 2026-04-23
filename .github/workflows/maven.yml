@@ -68,6 +68,15 @@ jobs:
         severity: 'HIGH,CRITICAL'
     - name: Compilar modulos sin tests
       run: mvn -B -pl producto-service,orden-service -am clean package -DskipTests
+    # ===================================
+    # Hardening: OPA/Conftest sobre Dockerfiles
+    # ===================================
+    - name: Instalar Conftest
+      run: |
+        curl -L https://github.com/open-policy-agent/conftest/releases/download/v0.68.2/conftest_0.68.2_Linux_x86_64.tar.gz \
+        | tar zx
+        sudo mv conftest /usr/local/bin/
+        conftest --version
     # __________________________
     # Levantar producto-service
     # __________________________
