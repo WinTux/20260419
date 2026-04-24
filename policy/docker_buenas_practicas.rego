@@ -4,7 +4,7 @@ import rego.v1
 deny contains msg if {
   some i
   lower(input.dockerfile[0][i].Cmd) == "from"
-  endswith(lower(input.dockerfile[0][i].Value), ":latest")
+  endswith(lower(input[0][i].Value), ":latest")
   msg := "No uses tag 'latest' en la instrucción FROM"
 }
 # Se deniega si el Dockerfile no expone ningun puerto
@@ -14,5 +14,5 @@ deny contains msg if {
 }
 any_expose if {
   some i
-  lower(input.dockerfile[0][i].Cmd) == "expose"
+  lower(input[0][i].Cmd) == "expose"
 }
