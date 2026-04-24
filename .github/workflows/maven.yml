@@ -100,7 +100,7 @@ jobs:
         format: json
         output-file: producto-sbom.json
         upload-artifact: true
-        artifact-name: producto-sbom.json
+        artifact-name: productosbom.json
     - name: SBOM orden-service
       uses: anchore/sbom-action@v0.15.11
       with:
@@ -108,7 +108,7 @@ jobs:
         format: json
         output-file: orden-sbom.json
         upload-artifact: true
-        artifact-name: orden-sbom.json
+        artifact-name: ordensbom.json
     # __________________________
     # Levantar producto-service
     # __________________________
