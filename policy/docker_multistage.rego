@@ -9,6 +9,6 @@ deny contains msg if {
 es_multistage if {
   count([1 |
     some i
-    lower(input.dockerfile[0][i].Cmd) == "from"
+    lower(input[0][i].Cmd) == "from"
   ]) > 1
 }
