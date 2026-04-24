@@ -93,22 +93,30 @@ jobs:
     # __________________________
     # SBOM (Software Bill of Materials)
     # __________________________
-    - name: SBOM producto-service
+    - name: SBOM producto-service (CycloneDX)
       uses: anchore/sbom-action@v0.15.11
       with:
         path: producto-service
-        format: json
-        output-file: producto-sbom.json
+        format: cyclonedx-json
+        output-file: productosbom.json
         upload-artifact: true
         artifact-name: productosbom.json
-    - name: SBOM orden-service
+    - name: Escaneo Snyk SBOM producto-service
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: snyk sbom test --experimental --file=productosbom.json -d || true
+    - name: SBOM orden-service (CycloneDX)
       uses: anchore/sbom-action@v0.15.11
       with:
         path: orden-service
-        format: json
-        output-file: orden-sbom.json
+        format: cyclonedx-json
+        output-file: ordensbom.json
         upload-artifact: true
         artifact-name: ordensbom.json
+    - name: Escaneo Snyk SBOM orden-service
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      run: snyk sbom test --experimental --file=ordensbom.json -d || true
     # __________________________
     # Levantar producto-service
     # __________________________
