@@ -167,7 +167,34 @@ jobs:
           --server.port=8082 \
           --spring.datasource.url=jdbc:postgresql://localhost:5434/ordendb \
           > ../logs_orden/orden-service.log 2>&1 &
-
+    # __________________________
+    # Build imagen Docker
+    # __________________________
+    - name: Realizando el build de las imagenes Docker
+      run: |
+        docker build -t producto-service-img producto-service
+        docker build -t orden-service-img orden-service
+    - name: Escaneado de imagenes con Trivy (producto-service)
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: image
+        image-ref: 'producto-service-img'
+        severity: 'HIGH,CRITICAL'
+        ignore-unfixed: true
+    - name: Escaneado de imagenes con Trivy (orden-service)
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: image
+        image-ref: 'orden-service-img'
+        severity: 'HIGH,CRITICAL'
+        ignore-unfixed: true
+    # Seguridad del pipeline
+    - name: Si se encontraron fallas de seguridad HIGH o CRITICAL
+      run: |
+        if grep -R "CRITICAL\|HIGH" trivy*; then
+          echo "¡Se detectaron viulnerabilidades. Causando fracaso del pipeline!"
+          exit 1
+        fi || true
     - name: Esperar hasta que los servicios estén listos
       run: sleep 25
     - name: Ejecutando tests de integración (multi módulo)
