@@ -172,8 +172,8 @@ jobs:
     # __________________________
     - name: Realizando el build de las imagenes Docker
       run: |
-        docker build -t producto-service-img producto-service
-        docker build -t orden-service-img orden-service
+        docker build -t producto-service-img --build-arg SERVICE_NAME=producto-service -f producto-service/Dockerfile .
+        docker build -t orden-service-img --build-arg SERVICE_NAME=orden-service -f orden-service/Dockerfile .
     - name: Escaneado de imagenes con Trivy (producto-service)
       uses: aquasecurity/trivy-action@master
       with:
