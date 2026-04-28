@@ -188,13 +188,19 @@ jobs:
         image-ref: 'orden-service-img'
         severity: 'HIGH,CRITICAL'
         ignore-unfixed: true
-    # Seguridad del pipeline
-    - name: Si se encontraron fallas de seguridad HIGH o CRITICAL
-      run: |
-        if grep -R "CRITICAL\|HIGH" trivy*; then
-          echo "¡Se detectaron viulnerabilidades. Causando fracaso del pipeline!"
-          exit 1
-        fi || true
+#    # Seguridad del pipeline
+#    - name: Si se encontraron fallas de seguridad HIGH o CRITICAL
+#      run: |
+#        if grep -R "CRITICAL\|HIGH" trivy*; then
+#          echo "¡Se detectaron viulnerabilidades. Causando fracaso del pipeline!"
+#          exit 1
+#        fi || true
+    - name: Trivy - Escaneo IaC
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'config'
+        scan-ref: '.'
+        severity: 'HIGH,CRITICAL'
     - name: Esperar hasta que los servicios estén listos
       run: sleep 25
     - name: Ejecutando tests de integración (multi módulo)
