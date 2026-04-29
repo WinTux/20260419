@@ -201,6 +201,18 @@ jobs:
         scan-type: 'config'
         scan-ref: '.'
         severity: 'HIGH,CRITICAL'
+    - name: Lint Falco reglas via Docker
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}/rules:/rules \
+          falcosecurity/falco:latest \
+          falco --list -r /rules/springboot-runtime.yaml
+    - name: Se ejecuta validación de reglas YAML
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}/rules:/rules \
+          falcosecurity/falco:latest \
+          falco --dry-run -r /rules/springboot-runtime.yaml
     - name: Esperar hasta que los servicios estén listos
       run: sleep 25
     - name: Ejecutando tests de integración (multi módulo)
